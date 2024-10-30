@@ -72,7 +72,7 @@ def block_render():
                                 #player_rect.left = block_rect.right  # Nudge player to the right
                                 collide_left=True
 
-                        if distance_to_top>=player_rect.height and abs(player_rect.x-block_rect.x)<bls/1.3 and stand==False:
+                        if distance_to_top>=player_rect.height and abs(player_rect.x-block_rect.x)<bls/(1/3) and stand==False: # (1/3) was originally 1.3, but i changed to a fraction for accuracy's sake
                             player_rect.y=block_rect.y+bls+1
                             yspeed_pl=0
                             print("head")
