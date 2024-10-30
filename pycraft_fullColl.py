@@ -1,4 +1,5 @@
 # TODO: Implement full ceiling collisions when jumping. Located at block_render()
+# TODO: Fix camera not centering to player when walking into a wall.
 
 import sys
 import pygame as pg
