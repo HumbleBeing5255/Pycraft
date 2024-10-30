@@ -1,21 +1,18 @@
-# TODO: Implement full ceiling collisions when jumping. Located at block_render()
-# TODO: Fix camera not centering to player when walking into a wall.
-
 import sys
 import pygame as pg
 from collections import deque
-
 pg.init()
 clock = pg.time.Clock()
 scw, sch, bls = 1000, 700, 50
 world_width = 100
 collide_left=False
 collide_right=False
-xspeed_pl, yspeed_pl, stand, mouse_down, mid_x, mid_y, block_list, block_list_y, xofs, white, black = 0, 0, True, False, scw // 2, sch // 2, deque([]), deque([]), 0, (255, 255, 255), (0, 0, 0)
+xspeed_pl, yspeed_pl, stand, mouse_down, mid_x, mid_y, block_list, block_list_y, xofs,white, black = 0, 0, True, False, scw // 2, sch // 2, deque([]), deque([]),0, (255, 255, 255), (0, 0, 0)
 font = pg.font.Font(None, 50)
 screen = pg.display.set_mode((scw, sch))
 block_rect = pg.rect.Rect(0, 0, bls, bls)
 player_rect = pg.rect.Rect(mid_x, mid_y - bls * 4, bls * 0.9, bls * 1.8)
+cloud_background=pg.transform.scale(pg.image.load("cloud_background.jpg"), (scw,sch))
 player_surface = pg.transform.scale(pg.image.load("Steve.webp"), (player_rect.width, player_rect.height))
 dirt_block_surface = pg.transform.scale(pg.image.load("dirt_block.jpg").convert(), (bls, bls))
 stone_block_surface = pg.transform.scale(pg.image.load("stone_block.jpg").convert(), (bls, bls))
@@ -35,7 +32,7 @@ print(f"World width: {len(block_list)}\nWorld hight: {len(block_list[0])}")
 
 
 def block_render():
-    global mouse_down, xofs, yspeed_pl, stand, xofs,collide_left,collide_right
+    global mouse_down, xofs,yspeed_pl, stand, collide_left,collide_right
     for h in range(len(block_list)):
         if abs(block_list[h][0][1] + xofs) < 550:
             for v in range(len(block_list[0])):
@@ -72,10 +69,10 @@ def block_render():
                                 #player_rect.left = block_rect.right  # Nudge player to the right
                                 collide_left=True
 
-                        if distance_to_top>=player_rect.height and abs(player_rect.x-block_rect.x)<bls/1.2 and stand==False: # (1/3) was originally 1.3, but i changed to a fraction for accuracy's sake
+                        if distance_to_top>=player_rect.height and abs(player_rect.x-block_rect.x)<bls/1.2 and stand==False:
                             player_rect.y+=abs(yspeed_pl)+1
                             yspeed_pl=0
-                            print("head")
+                            pg.draw.rect(screen,black,block_rect,2)
                 if block_rect.collidepoint(pg.mouse.get_pos()):
                     pg.draw.rect(screen, black, block_rect, 2)
                     if mouse_down:
@@ -89,7 +86,7 @@ def block_render():
 
 
 def player_render():
-    global stand, yspeed_pl, xofs,collide_left,collide_right
+    global stand, yspeed_pl,xofs,collide_left,collide_right
     yspeed_pl -= bls * 0.0065
     player_rect.y -= yspeed_pl
     keys = pg.key.get_pressed()
@@ -99,14 +96,14 @@ def player_render():
             yspeed_pl = 6
             stand = False
     if keys[pg.K_a]:
-        xofs+=2
+        xofs+=4
         if collide_left:
-            xofs -= 2
+            xofs -= 4
             collide_left=False
     if keys[pg.K_d]:
-        xofs-=2
+        xofs-=4
         if collide_right:
-            xofs+=2
+            xofs+=4
             collide_right=False
         collide_right=False
     screen.blit(player_surface, player_rect)
@@ -124,7 +121,8 @@ while True:
             mouse_down = True
         if event.type == pg.MOUSEBUTTONUP:
             mouse_down = False
-    screen.fill((0, 150, 255))
+    #screen.fill((0, 150, 255))
+    screen.blit(cloud_background,(0,0))
     block_render()
     player_render()
     ms_text = font.render(str(pg.time.get_ticks() - start_time), True, white)
