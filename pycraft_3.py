@@ -3,7 +3,7 @@ import pygame as pg
 from collections import deque
 pg.init()
 clock = pg.time.Clock()
-scw, sch, bls = 1000, 700, 50
+scw, sch, bls = 1800, 1000, 50
 world_width = 100
 collide_left=False
 collide_right=False
@@ -42,7 +42,7 @@ print(f"World width: {len(block_list)}\nWorld hight: {len(block_list[0])}")
 def block_render():
     global mouse_down, xofs,yspeed_pl, stand, collide_left,collide_right
     for h in range(len(block_list)):
-        if abs(block_list[h][0][1] + xofs) < 550:
+        if abs(block_list[h][0][1] + xofs) < scw/2+bls:
             for v in range(len(block_list[0])):
                 # Finds the top left corner of the block right below the player.
                 block_rect.topleft = (block_list[h][v][1] + xofs + mid_x - (bls // 2), block_list[h][v][2] + bls)
