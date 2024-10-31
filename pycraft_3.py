@@ -7,6 +7,7 @@ scw, sch, bls = 1000, 700, 50
 world_width = 100
 collide_left=False
 collide_right=False
+item_selected=0
 xspeed_pl, yspeed_pl, stand, mouse_down, mid_x, mid_y, block_list, block_list_y, xofs,white, black = 0, 0, True, False, scw // 2, sch // 2, deque([]), deque([]),0, (255, 255, 255), (0, 0, 0)
 font = pg.font.Font(None, 50)
 screen = pg.display.set_mode((scw, sch))
@@ -16,9 +17,13 @@ cloud_background=pg.transform.scale(pg.image.load("cloud_background.jpg"), (scw,
 player_surface = pg.transform.scale(pg.image.load("Steve.webp"), (player_rect.width, player_rect.height))
 dirt_block_surface = pg.transform.scale(pg.image.load("dirt_block.jpg").convert(), (bls, bls))
 stone_block_surface = pg.transform.scale(pg.image.load("stone_block.jpg").convert(), (bls, bls))
-dirt_item_display=pg.transform.scale(pg.image.load("dirt_item.webp"), (60, 60))
-stone_iitem_display=pg.transform.scale(pg.image.load("stone_item.png"), (60, 60))
-pickaxe_item_display=pg.transform.scale(pg.image.load("pickaxe_item.jpg"), (60, 60))
+dirt_item_surface=pg.transform.scale(pg.image.load("dirt_item.webp"), (60, 60))
+stone_iitem_surface=pg.transform.scale(pg.image.load("stone_item.png"), (60, 60))
+pickaxe_item_surface=pg.transform.scale(pg.image.load("pickaxe_item.jpg"), (60, 60))
+pickaxe_item_rect=pg.rect.Rect(240,sch-60,60,60)
+dirt_item_rect=pg.rect.Rect(300,sch-60,60,60)
+stone_item_rect=pg.rect.Rect(360,sch-60,60,60)
+
 
 # world creation
 for h in range(world_width*-1,world_width):
@@ -64,6 +69,7 @@ def block_render():
 
                         # Wall Collisions
                         else:
+                            stand=False
                             # Nudge the player based on collision on the left or right side
                             if player_rect.right > block_rect.left and player_rect.left < block_rect.left:
                                 #player_rect.right = block_rect.left  # Nudge player to the left
@@ -75,19 +81,46 @@ def block_render():
                         if distance_to_top>=player_rect.height and abs(player_rect.x-block_rect.x)<bls/1.2 and stand==False:
                             player_rect.y+=abs(yspeed_pl)+1
                             yspeed_pl=0
-                            pg.draw.rect(screen,black,block_rect,2)
                 if block_rect.collidepoint(pg.mouse.get_pos()):
                     pg.draw.rect(screen, black, block_rect, 2)
-                    if mouse_down:
-                        if block_list[h][v][0] == 0:
-                            block_list[h][v][0] = 1
-                        elif block_list[h][v][0] == 1:
-                            block_list[h][v][0] = 0
-                        elif block_list[h][v][0] == 2:
-                            block_list[h][v][0] = 0
+                    if mouse_down:                                      # and (abs(player_rect.centerx-block_rect.centerx)>=bls or abs(player_rect.centery-block_rect.centery)>=bls*1.3)
+                        if item_selected==1:
+                            if block_list[h][v][0]!=0:
+                                block_list[h][v][0]=0
+                        elif item_selected==2:
+                            if block_list[h][v][0]==0:
+                                block_list[h][v][0]=1
+                        elif item_selected==3:
+                            if block_list[h][v][0]==0:
+                                block_list[h][v][0]=2
                         mouse_down = False
 
-
+def events():
+    global mouse_down,item_selected
+    for event in pg.event.get():
+        if event.type == pg.QUIT:
+            pg.quit()
+            sys.exit()
+        if event.type == pg.MOUSEBUTTONDOWN:
+            if event.button==1:
+                mouse_down = True
+            if event.button==4:
+                item_selected-=1
+        if event.type == pg.MOUSEBUTTONUP:
+            if event.button==1:
+                mouse_down = False
+            if event.button==5:
+                item_selected+=1
+    if item_selected>3:
+        item_selected=1
+    if item_selected<1:
+        item_selected=3
+    if item_selected==1:
+        pg.draw.rect(screen,black,pickaxe_item_rect,4)
+    if item_selected==2:
+        pg.draw.rect(screen,black,dirt_item_rect,4)
+    if item_selected==3:
+        pg.draw.rect(screen,black,stone_item_rect,4)
 def player_render():
     global stand, yspeed_pl,xofs,collide_left,collide_right
     yspeed_pl -= bls * 0.0065
@@ -116,22 +149,16 @@ def player_render():
 # main loop
 while True:
     start_time = pg.time.get_ticks()
-    for event in pg.event.get():
-        if event.type == pg.QUIT:
-            pg.quit()
-            sys.exit()
-        if event.type == pg.MOUSEBUTTONDOWN:
-            mouse_down = True
-        if event.type == pg.MOUSEBUTTONUP:
-            mouse_down = False
     #screen.fill((0, 150, 255))
     screen.blit(cloud_background,(0,0))
     block_render()
     player_render()
+
     ms_text = font.render(str(pg.time.get_ticks() - start_time), True, white)
-    screen.blit(dirt_item_display,(300,sch-dirt_item_display.height))
-    screen.blit(stone_iitem_display,(380,sch-stone_iitem_display.height))
-    screen.blit(pickaxe_item_display,(220,sch-pickaxe_item_display.height))
+    screen.blit(dirt_item_surface,dirt_item_rect)
+    screen.blit(stone_iitem_surface,stone_item_rect)
+    screen.blit(pickaxe_item_surface,pickaxe_item_rect)
     screen.blit(ms_text, (20, 20))
+    events()
     pg.display.flip()
     clock.tick(60)
